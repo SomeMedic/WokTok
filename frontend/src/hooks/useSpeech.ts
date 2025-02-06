@@ -19,7 +19,11 @@ export function useSpeech() {
     const utterance = new SpeechSynthesisUtterance(text);
     
     // Установить язык в соответствии с текущим языком приложения
-    utterance.lang = currentLanguage.code;
+    if (currentLanguage.code) {
+      utterance.lang = currentLanguage.code;
+    } else {
+      utterance.lang = 'en-US'; // Fallback на английский язык
+    }
     
     utterance.onstart = () => setSpeaking(true);
     utterance.onend = () => setSpeaking(false);

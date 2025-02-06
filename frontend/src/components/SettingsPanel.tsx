@@ -1,4 +1,4 @@
-import { Settings, MonitorUp, Type, Eye } from 'lucide-react';
+import { Settings, MonitorUp, Type } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useState } from 'react';
 

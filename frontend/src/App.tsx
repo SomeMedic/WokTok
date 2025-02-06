@@ -9,7 +9,6 @@ import { AnimatedBackground } from './components/AnimatedBackground'
 import { SettingsProvider } from './contexts/SettingsContext'
 import { SettingsPanel } from './components/SettingsPanel'
 import { NextArticlePreview } from './components/NextArticlePreview'
-import { WikiArticle } from './components/WikiCard'
 
 function AppContent() {
   const [showAbout, setShowAbout] = useState(false)
