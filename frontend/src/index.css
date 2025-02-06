@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+html, body {
+  overscroll-behavior-y: contain;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .bg-grid-pattern {
+        background-image: linear-gradient(currentColor 1px, transparent 1px),
+            linear-gradient(to right, currentColor 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .bg-gradient-radial {
+        background-image: radial-gradient(circle at center, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
+    }
+
+    @keyframes gradient {
+        0% {
+            transform: translate(0, -25%) rotate(-5deg);
+            opacity: 0.5;
+        }
+        50% {
+            transform: translate(0, 25%) rotate(5deg);
+            opacity: 0.7;
+        }
+        100% {
+            transform: translate(0, -25%) rotate(-5deg);
+            opacity: 0.5;
+        }
+    }
+
+    .animate-gradient-slow {
+        animation: gradient 30s ease-in-out infinite;
+    }
+
+    @keyframes slideIn {
+        0% {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        0% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+    }
+
+    .animate-slide-in {
+        animation: slideIn 0.5s ease-out forwards;
+    }
+
+    .animate-slide-out {
+        animation: slideOut 0.5s ease-in forwards;
+    }
+
+    @keyframes cardAppear {
+        0% {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .animate-card-appear {
+        animation: cardAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .card-enter {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    .card-enter-active {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+
+    .card-exit {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+    .card-exit-active {
+        opacity: 0;
+        transform: scale(1.1) translateY(-20px);
+        transition: opacity 0.5s ease-in, transform 0.5s ease-in;
+    }
+
+    .focus-mode {
+        & > *:not(:focus-within) {
+            opacity: 0.5;
+            filter: blur(2px);
+            transition: opacity 0.3s, filter 0.3s;
+        }
+
+        &:hover > *:not(:focus-within) {
+            opacity: 1;
+            filter: none;
+        }
+    }
+
+    .text-selection {
+        @apply bg-blue-500/20;
+    }
+
+    ::selection {
+        @apply bg-blue-500/20;
+    }
+}
