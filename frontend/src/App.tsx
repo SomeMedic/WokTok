@@ -132,7 +132,7 @@ function AppContent() {
               >
                 ✕
               </button>
-              <h2 className="text-xl font-bold mb-4">About WikiTok</h2>
+              <h2 className="text-xl font-bold mb-4">About WokTok</h2>
               <p className="mb-4">
                 A TikTok-style interface for exploring random Wikipedia articles.
               </p>
