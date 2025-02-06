@@ -56,35 +56,34 @@ export function NextArticlePreview({ article }: NextArticlePreviewProps) {
     // Для мобильных устройств возвращаем выдвигающееся превью
     return (
         <div className="block md:hidden">
-            <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className={`fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm 
-                    p-2 rounded-l-lg shadow-lg transition-transform duration-300
-                    ${isExpanded ? 'translate-x-full' : 'translate-x-0'}`}
-            >
-                <ChevronLeft className={`w-6 h-6 text-gray-600 dark:text-gray-300 transition-transform duration-300
-                    ${isExpanded ? 'rotate-180' : ''}`} />
-            </button>
+            <div className={`fixed top-1/2 -translate-y-1/2 right-0 z-30 transform transition-all duration-300 flex items-center
+                ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-2 rounded-l-lg shadow-lg flex-shrink-0"
+                >
+                    <ChevronLeft className={`w-6 h-6 text-gray-600 dark:text-gray-300 transition-transform duration-300
+                        ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
 
-            <div className={`fixed top-1/2 -translate-y-1/2 right-0 z-30 w-72 transform transition-all duration-300
-                ${isExpanded ? 'translate-x-0' : 'translate-x-full'}
-                ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-            >
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-l-lg shadow-lg overflow-hidden mx-2">
-                    <div className="relative h-32">
-                        {currentArticle.thumbnail ? (
-                            <img
-                                src={currentArticle.thumbnail.source}
-                                alt={currentArticle.title}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-2 left-3 right-3">
-                            <p className="text-sm text-white font-medium">Следующая статья:</p>
-                            <h3 className="text-white font-bold truncate">{currentArticle.title}</h3>
+                <div className={`w-72 transform transition-all duration-300 flex-shrink-0
+                    ${isExpanded ? 'translate-x-0' : 'translate-x-full'}`}>
+                    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-l-lg shadow-lg overflow-hidden ml-2">
+                        <div className="relative h-32">
+                            {currentArticle.thumbnail ? (
+                                <img
+                                    src={currentArticle.thumbnail.source}
+                                    alt={currentArticle.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20" />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute bottom-2 left-3 right-3">
+                                <p className="text-sm text-white font-medium">Следующая статья:</p>
+                                <h3 className="text-white font-bold truncate">{currentArticle.title}</h3>
+                            </div>
                         </div>
                     </div>
                 </div>
