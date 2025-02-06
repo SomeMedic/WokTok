@@ -118,7 +118,7 @@ export function WikiCard({ article }: WikiCardProps) {
                     >
                         {article.extract}
                     </p>
-                    <div className="flex justify-between items-center mt-6 shrink-0">
+                    <div className="flex justify-between items-center mt-6 shrink-0 pb-safe">
                         <a 
                             href={article.url}
                             target="_blank"

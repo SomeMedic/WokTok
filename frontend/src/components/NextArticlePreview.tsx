@@ -25,7 +25,7 @@ export function NextArticlePreview({ article }: NextArticlePreviewProps) {
     if (!settings.showPreview) return null;
 
     return (
-        <div className={`fixed bottom-4 right-4 z-40 max-w-sm transform transition-all duration-300 
+        <div className={`fixed md:bottom-4 bottom-[calc(env(safe-area-inset-bottom,0px)+4.5rem)] right-4 z-40 max-w-sm transform transition-all duration-300 
             ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden">
                 <div className="relative h-24">
