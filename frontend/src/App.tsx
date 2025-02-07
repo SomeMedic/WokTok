@@ -18,12 +18,10 @@ import { useVisibleArticlesCount } from './hooks/useVisibleArticlesCount'
 // Создадим компонент для проверки видимости статьи
 const ArticleVisibilityChecker = memo(function ArticleVisibilityChecker({ 
     article, 
-    onVisible,
-    currentIndex
+    onVisible
 }: { 
     article: WikiArticle;
     onVisible: (article: WikiArticle) => void;
-    currentIndex: number;
 }) {
     const tags = useArticleTags(article.title, article.extract);
     const { selectedTags } = useTagFilter();
@@ -322,7 +320,6 @@ function AppContent() {
             key={nextArticle.pageid}
             article={nextArticle}
             onVisible={handleVisibleArticle}
-            currentIndex={currentArticleIndex}
           />
         )}
 
