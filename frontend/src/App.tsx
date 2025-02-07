@@ -45,7 +45,7 @@ function AppContent() {
   const observerTarget = useRef(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0)
-  const { settings, currentTheme } = useSettings()
+  const { currentTheme } = useSettings()
   const { selectedTags } = useTagFilter()
   const [nextVisibleArticle, setNextVisibleArticle] = useState<WikiArticle | null>(null)
 
