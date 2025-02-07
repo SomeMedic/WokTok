@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Tag } from '../hooks/useArticleTags';
 
 interface TagFilterContextType {
     selectedTags: string[];

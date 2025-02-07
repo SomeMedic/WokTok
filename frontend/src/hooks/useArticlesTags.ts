@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { WikiArticle } from '../components/WikiCard';
 import { calculateArticleTags } from './useArticleTags';
-import { Tag } from './useArticleTags';
 
 // Функция для создания стабильного ключа для статьи
 function getArticleKey(article: WikiArticle) {

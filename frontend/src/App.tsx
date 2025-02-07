@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState, useMemo, memo } from 'react'
-import { WikiCard, WikiArticle } from './components/WikiCard'
-import { Loader2, Search, X, Download, Menu, Heart, Languages, Settings as SettingsIcon } from 'lucide-react'
+import { WikiArticle } from './components/WikiCard'
+import { Loader2, Search, X, Download, Menu, Heart, Settings as SettingsIcon } from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
 import { LanguageSelector } from './components/LanguageSelector'
 import { useLikedArticles } from './contexts/LikedArticlesContext'

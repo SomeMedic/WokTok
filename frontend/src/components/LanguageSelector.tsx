@@ -8,7 +8,12 @@ export function LanguageSelector() {
     <div className="relative w-full">
       <select
         value={currentLanguage.id}
-        onChange={(e) => setLanguage(LANGUAGES.find(lang => lang.id === e.target.value) || LANGUAGES[0])}
+        onChange={(e) => {
+          const selectedLanguage = LANGUAGES.find(lang => lang.id === e.target.value);
+          if (selectedLanguage) {
+            setLanguage(selectedLanguage);
+          }
+        }}
         className="w-full appearance-none bg-white/10 text-white px-4 py-2 pr-8 rounded-lg hover:bg-white/20 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         {LANGUAGES.map((language) => (
