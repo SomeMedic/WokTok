@@ -45,7 +45,7 @@ function AppContent() {
   const observerTarget = useRef(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0)
-  const { currentTheme } = useSettings()
+  const { settings, currentTheme } = useSettings()
   const { selectedTags } = useTagFilter()
   const [nextVisibleArticle, setNextVisibleArticle] = useState<WikiArticle | null>(null)
 
@@ -156,45 +156,43 @@ function AppContent() {
     <div className="min-h-screen bg-transparent">
       <AnimatedBackground />
       <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory">
-        <div className="fixed top-4 left-4 z-50">
-          <button
-            onClick={() => window.location.reload()}
-            className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all duration-300 shadow-lg hover:shadow-xl"
-          >
-            <div className="relative w-6 h-6">
-              <div className={`absolute inset-0 bg-gradient-to-r ${currentTheme.gradient} rounded-full animate-pulse`} />
-              <div className="absolute inset-0.5 bg-black/5 backdrop-blur-sm rounded-full" />
-              <span className="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">W</span>
-            </div>
-            <span className={`font-bold bg-gradient-to-r ${currentTheme.gradient} bg-clip-text text-transparent group-hover:scale-105 transition-transform`}>
-              WikiTok
-            </span>
-          </button>
-        </div>
+        <button
+          onClick={() => window.location.href = '/'}
+          className="fixed top-4 left-4 z-50 group flex items-center gap-2"
+        >
+          <div className="relative w-6 h-6">
+            <div className={`absolute inset-0 bg-gradient-to-r ${currentTheme.gradient} rounded-full animate-pulse`} />
+            <div className="absolute inset-0.5 bg-black/5 backdrop-blur-sm rounded-full" />
+            <span className="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">W</span>
+          </div>
+          <span className={`font-bold bg-gradient-to-r ${currentTheme.gradient} bg-clip-text text-transparent group-hover:scale-105 transition-transform`}>
+            WikiTok
+          </span>
+        </button>
 
         <div className="fixed top-4 right-4 z-50">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
+            className={`p-2.5 rounded-full transition-all ${currentTheme.background} hover:bg-white/10 backdrop-blur-sm shadow-lg ${currentTheme.text}`}
           >
             {showMenu ? (
-              <X className="w-6 h-6 text-white" />
+              <X className="w-6 h-6" />
             ) : (
-              <Menu className="w-6 h-6 text-white" />
+              <Menu className="w-6 h-6" />
             )}
           </button>
         </div>
 
         {showMenu && (
           <div className="fixed top-16 right-4 z-50">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden">
+            <div className={`${currentTheme.background} backdrop-blur-md rounded-2xl shadow-lg overflow-hidden`}>
               <div className="p-2 space-y-1 min-w-[200px]">
                 <button
                   onClick={() => {
                     setShowMenu(false)
                     setShowLikes(true)
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-white"
+                  className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors ${currentTheme.text}`}
                 >
                   <Heart className="w-5 h-5" />
                   <span>Избранное</span>
@@ -205,14 +203,14 @@ function AppContent() {
                     setShowMenu(false)
                     setShowSettings(true)
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-white"
+                  className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors ${currentTheme.text}`}
                 >
                   <SettingsIcon className="w-5 h-5" />
                   <span>Настройки</span>
                 </button>
 
                 <div className="px-4 py-2">
-                  <p className="text-sm text-white/70 mb-2">Язык:</p>
+                  <p className={`text-sm mb-2 ${currentTheme.text} opacity-70`}>Язык:</p>
                   <div className="relative">
                     <LanguageSelector />
                   </div>
@@ -267,36 +265,27 @@ function AppContent() {
                 ) : (
                   <div className="space-y-4">
                     {filteredLikedArticles.map((article) => (
-                      <div key={`${article.pageid}-${Date.now()}`} className="flex gap-4 items-start group">
-                        {article.thumbnail && (
-                          <img
-                            src={article.thumbnail.source}
-                            alt={article.title}
-                            className="w-20 h-20 object-cover rounded"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <a
-                              href={article.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`font-bold ${currentTheme.text} hover:opacity-80 transition-opacity`}
-                            >
-                              {article.title}
-                            </a>
-                            <button
-                              onClick={() => toggleLike(article)}
-                              className={`${currentTheme.text} opacity-50 hover:opacity-90 p-1 rounded-full md:opacity-0 md:group-hover:opacity-50 transition-opacity`}
-                              aria-label="Удалить из избранного"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <p className={`text-sm ${currentTheme.text} opacity-70 line-clamp-2`}>
-                            {article.extract}
-                          </p>
+                      <div key={article.pageid} className="group">
+                        <div className="flex items-start justify-between gap-4">
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`font-bold ${currentTheme.text} hover:opacity-80 transition-opacity`}
+                          >
+                            {article.title}
+                          </a>
+                          <button
+                            onClick={() => toggleLike(article)}
+                            className={`${currentTheme.text} opacity-50 hover:opacity-90 p-1 rounded-full md:opacity-0 md:group-hover:opacity-50 transition-opacity`}
+                            aria-label="Удалить из избранного"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
+                        <p className={`text-sm ${currentTheme.text} opacity-70 line-clamp-2`}>
+                          {article.extract}
+                        </p>
                       </div>
                     ))}
                   </div>

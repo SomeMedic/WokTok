@@ -13,10 +13,10 @@ export function TagFilter() {
         <div className="fixed bottom-24 left-4 z-50">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`p-2.5 rounded-full ${currentTheme.background} hover:bg-white/20 backdrop-blur-sm transition-all shadow-lg`}
+                className={`p-2.5 rounded-full ${currentTheme.background} hover:bg-white/10 backdrop-blur-sm shadow-lg transition-all`}
                 title="Фильтр по тегам"
             >
-                <Filter className={`w-6 h-6 ${currentTheme.text} ${selectedTags.length > 0 ? 'text-blue-500' : ''}`} />
+                <Filter className={`w-6 h-6 ${selectedTags.length > 0 ? 'text-blue-500' : currentTheme.text}`} />
             </button>
 
             {isOpen && (
@@ -42,7 +42,7 @@ export function TagFilter() {
                                     className={`px-2.5 py-1 rounded-full text-sm transition-all ${
                                         isTagSelected(tag.id)
                                             ? `${tag.color} text-white`
-                                            : 'bg-white/10 hover:bg-white/20 text-white'
+                                            : `${currentTheme.background} hover:bg-white/10 ${currentTheme.text}`
                                     }`}
                                 >
                                     {tag.name}
