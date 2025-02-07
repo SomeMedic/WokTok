@@ -1,52 +1,27 @@
-import { useState, useEffect, useRef } from "react";
-import { LANGUAGES } from "../languages";
-import { useLocalization } from "../hooks/useLocalization";
+import { LANGUAGES } from '../languages';
+import { useLocalization } from '../hooks/useLocalization';
 
 export function LanguageSelector() {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const { setLanguage } = useLocalization();
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setShowDropdown(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const { currentLanguage, setLanguage } = useLocalization();
 
   return (
-    <div
-      className="relative inline-flex items-center"
-      onClick={() => setShowDropdown(!showDropdown)}
-      ref={dropdownRef}
-    >
-      <button className="text-sm text-white/70 hover:text-white transition-colors">
-        Language
-      </button>
-
-      {showDropdown && (
-        <div className="absolute overflow-y-auto max-h-[205px] py-2 w-30 right-0 top-full mt-1 bg-gray-900 rounded-md shadow-lg">
-          {LANGUAGES.map((language) => (
-            <button
-              key={language.id}
-              onClick={() => setLanguage(language.id)}
-              className="w-full items-center flex gap-3 px-3 py-1 hover:bg-gray-800"
-            >
-              <img className="w-5" src={language.flag} alt={language.name} />
-              <span className="text-xs">{language.name}</span>
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="relative w-full">
+      <select
+        value={currentLanguage.id}
+        onChange={(e) => setLanguage(LANGUAGES.find(lang => lang.id === e.target.value) || LANGUAGES[0])}
+        className="w-full appearance-none bg-white/10 text-white px-4 py-2 pr-8 rounded-lg hover:bg-white/20 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        {LANGUAGES.map((language) => (
+          <option key={language.id} value={language.id} className="bg-gray-800 text-white">
+            {language.name}
+          </option>
+        ))}
+      </select>
+      <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+        <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
     </div>
   );
 }

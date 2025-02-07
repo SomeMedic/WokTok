@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useLikedArticles } from '../contexts/LikedArticlesContext';
 import { SpeechButton } from './SpeechButton';
 import { useSettings } from '../contexts/SettingsContext';
+import { useArticleTags, getTagStyle } from '../hooks/useArticleTags';
 
 export interface WikiArticle {
     title: string;
@@ -25,6 +26,7 @@ export function WikiCard({ article }: WikiCardProps) {
     const [selectedText, setSelectedText] = useState('');
     const { toggleLike, isLiked } = useLikedArticles();
     const { settings, currentTheme, fonts } = useSettings();
+    const tags = useArticleTags(article.title, article.extract);
 
     // Add debugging log
     console.log('Article data:', {
@@ -103,14 +105,32 @@ export function WikiCard({ article }: WikiCardProps) {
                             onLoad={() => setImageLoaded(true)}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent" />
-                        <h2 className="absolute bottom-0 left-0 right-0 p-8 text-4xl font-bold text-white drop-shadow-lg">
-                            {article.title}
-                        </h2>
+                        <div className="absolute bottom-0 left-0 right-0 p-8">
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {tags.map(tag => (
+                                    <span key={tag.id} className={getTagStyle(tag)}>
+                                        {tag.name}
+                                    </span>
+                                ))}
+                            </div>
+                            <h2 className="text-4xl font-bold text-white drop-shadow-lg">
+                                {article.title}
+                            </h2>
+                        </div>
                     </div>
                 )}
                 <div className="p-8 flex flex-col flex-1 overflow-y-auto" onMouseUp={handleTextSelection}>
                     {!article.thumbnail && (
-                        <h2 className="text-3xl font-bold mb-6 dark:text-white shrink-0">{article.title}</h2>
+                        <>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {tags.map(tag => (
+                                    <span key={tag.id} className={getTagStyle(tag)}>
+                                        {tag.name}
+                                    </span>
+                                ))}
+                            </div>
+                            <h2 className="text-3xl font-bold mb-6 dark:text-white shrink-0">{article.title}</h2>
+                        </>
                     )}
                     <p 
                         className={`${textClasses} flex-1 overflow-y-auto`}
@@ -134,7 +154,7 @@ export function WikiCard({ article }: WikiCardProps) {
                                     className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
                                     title="Сохранить цитату"
                                 >
-                                    <Quote className="w-6 h-6 text-white" />
+                                    <Quote className={`w-6 h-6 ${currentTheme.text}`} />
                                 </button>
                             )}
                             <SpeechButton text={`${article.title}. ${article.extract}`} />
@@ -143,12 +163,12 @@ export function WikiCard({ article }: WikiCardProps) {
                                 className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
                                 title="Поделиться"
                             >
-                                <Share2 className="w-6 h-6 text-white" />
+                                <Share2 className={`w-6 h-6 ${currentTheme.text}`} />
                             </button>
                             <button
                                 onClick={() => toggleLike(article)}
                                 className={`p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all ${
-                                    isLiked(article.pageid) ? 'text-red-500' : 'text-white'
+                                    isLiked(article.pageid) ? 'text-red-500' : currentTheme.text
                                 }`}
                                 title={isLiked(article.pageid) ? 'Удалить из избранного' : 'Добавить в избранное'}
                             >

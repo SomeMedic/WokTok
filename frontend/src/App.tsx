@@ -1,23 +1,55 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
-import { WikiCard } from './components/WikiCard'
-import { Loader2, Search, X, Download } from 'lucide-react'
+import { useEffect, useRef, useCallback, useState, useMemo, memo } from 'react'
+import { WikiCard, WikiArticle } from './components/WikiCard'
+import { Loader2, Search, X, Download, Menu, Heart, Languages, Settings as SettingsIcon } from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
 import { LanguageSelector } from './components/LanguageSelector'
 import { useLikedArticles } from './contexts/LikedArticlesContext'
 import { useWikiArticles } from './hooks/useWikiArticles'
 import { AnimatedBackground } from './components/AnimatedBackground'
-import { SettingsProvider } from './contexts/SettingsContext'
+import { SettingsProvider, useSettings } from './contexts/SettingsContext'
 import { SettingsPanel } from './components/SettingsPanel'
 import { NextArticlePreview } from './components/NextArticlePreview'
+import { TagFilterProvider, useTagFilter } from './contexts/TagFilterContext'
+import { TagFilter } from './components/TagFilter'
+import { useArticleTags } from './hooks/useArticleTags'
+import { ArticleWithTags } from './components/ArticleWithTags'
+import { useVisibleArticlesCount } from './hooks/useVisibleArticlesCount'
+
+// Создадим компонент для проверки видимости статьи
+const ArticleVisibilityChecker = memo(function ArticleVisibilityChecker({ 
+    article, 
+    onVisible,
+    currentIndex
+}: { 
+    article: WikiArticle;
+    onVisible: (article: WikiArticle) => void;
+    currentIndex: number;
+}) {
+    const tags = useArticleTags(article.title, article.extract);
+    const { selectedTags } = useTagFilter();
+
+    useEffect(() => {
+        // Проверяем только следующую статью после текущей
+        if (selectedTags.length === 0 || tags.some(tag => selectedTags.includes(tag.id))) {
+            onVisible(article);
+        }
+    }, [article, tags, selectedTags, onVisible]);
+
+    return null;
+});
 
 function AppContent() {
-  const [showAbout, setShowAbout] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
   const [showLikes, setShowLikes] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const { articles, loading, fetchArticles } = useWikiArticles()
   const { likedArticles, toggleLike } = useLikedArticles()
   const observerTarget = useRef(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0)
+  const { currentTheme } = useSettings()
+  const { selectedTags } = useTagFilter()
+  const [nextVisibleArticle, setNextVisibleArticle] = useState<WikiArticle | null>(null)
 
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
     entries.forEach(entry => {
@@ -40,15 +72,29 @@ function AppContent() {
     return () => observer.disconnect()
   }, [handleIntersection, articles])
 
+  // Заменим старый код подсчета на новый хук
+  const visibleArticlesCount = useVisibleArticlesCount(articles);
+
+  // Обновим handleObserver
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries
+      const [target] = entries;
       if (target.isIntersecting && !loading) {
-        fetchArticles()
+        // Если отфильтрованных статей мало, загружаем ещё
+        if (visibleArticlesCount < 5) {
+          fetchArticles();
+        }
       }
     },
-    [loading, fetchArticles]
-  )
+    [loading, fetchArticles, visibleArticlesCount]
+  );
+
+  // Добавим эффект для автоматической подгрузки при малом количестве видимых статей
+  useEffect(() => {
+    if (visibleArticlesCount < 5 && !loading) {
+      fetchArticles();
+    }
+  }, [visibleArticlesCount, loading, fetchArticles]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(handleObserver, {
@@ -91,6 +137,23 @@ function AppContent() {
     linkElement.click();
   };
 
+  // Обработчик для установки следующей видимой статьи
+  const handleVisibleArticle = useCallback((article: WikiArticle) => {
+    if (article.pageid !== articles[currentArticleIndex]?.pageid) {
+      setNextVisibleArticle(article);
+    }
+  }, [articles, currentArticleIndex]);
+
+  // Сбрасываем nextVisibleArticle при изменении фильтров
+  useEffect(() => {
+    setNextVisibleArticle(null);
+  }, [selectedTags]);
+
+  // Оптимизируем отображение проверки видимости
+  const nextArticle = useMemo(() => {
+    return articles[currentArticleIndex + 1] || null;
+  }, [articles, currentArticleIndex]);
+
   return (
     <div className="min-h-screen bg-transparent">
       <AnimatedBackground />
@@ -98,78 +161,91 @@ function AppContent() {
         <div className="fixed top-4 left-4 z-50">
           <button
             onClick={() => window.location.reload()}
-            className="text-2xl font-bold text-white drop-shadow-lg hover:opacity-80 transition-opacity"
+            className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all duration-300 shadow-lg hover:shadow-xl"
           >
-            WokTok
+            <div className="relative w-6 h-6">
+              <div className={`absolute inset-0 bg-gradient-to-r ${currentTheme.gradient} rounded-full animate-pulse`} />
+              <div className="absolute inset-0.5 bg-black/5 backdrop-blur-sm rounded-full" />
+              <span className="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">W</span>
+            </div>
+            <span className={`font-bold bg-gradient-to-r ${currentTheme.gradient} bg-clip-text text-transparent group-hover:scale-105 transition-transform`}>
+              WikiTok
+            </span>
           </button>
         </div>
 
-        <SettingsPanel />
-
-        <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2">
+        <div className="fixed top-4 right-4 z-50">
           <button
-            onClick={() => setShowAbout(!showAbout)}
-            className="text-sm text-white/70 hover:text-white transition-colors"
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
           >
-            About
+            {showMenu ? (
+              <X className="w-6 h-6 text-white" />
+            ) : (
+              <Menu className="w-6 h-6 text-white" />
+            )}
           </button>
-          <button
-            onClick={() => setShowLikes(!showLikes)}
-            className="text-sm text-white/70 hover:text-white transition-colors"
-          >
-            Likes
-          </button>
-          <LanguageSelector />
         </div>
 
-        {showAbout && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-gray-900 p-6 rounded-lg max-w-md relative">
-              <button
-                onClick={() => setShowAbout(false)}
-                className="absolute top-2 right-2 text-white/70 hover:text-white"
-              >
-                ✕
-              </button>
-              <h2 className="text-xl font-bold mb-4">About WokTok</h2>
-              <p className="mb-4">
-                A TikTok-style interface for exploring random Wikipedia articles.
-              </p>
-              <p className="text-white/70 mt-2">
-                Check out the code on{' '}
-                <a
-                  href="https://github.com/SomeMedic"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white hover:underline"
+        {showMenu && (
+          <div className="fixed top-16 right-4 z-50">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden">
+              <div className="p-2 space-y-1 min-w-[200px]">
+                <button
+                  onClick={() => {
+                    setShowMenu(false)
+                    setShowLikes(true)
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-white"
                 >
-                  GitHub
-                </a>
-              </p>
+                  <Heart className="w-5 h-5" />
+                  <span>Избранное</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowMenu(false)
+                    setShowSettings(true)
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-white"
+                >
+                  <SettingsIcon className="w-5 h-5" />
+                  <span>Настройки</span>
+                </button>
+
+                <div className="px-4 py-2">
+                  <p className="text-sm text-white/70 mb-2">Язык:</p>
+                  <div className="relative">
+                    <LanguageSelector />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
+        <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
+
         {showLikes && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-gray-900 p-6 rounded-lg w-full max-w-2xl h-[80vh] flex flex-col relative">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className={`${currentTheme.background} p-6 rounded-lg w-full max-w-2xl h-[80vh] flex flex-col relative backdrop-blur-sm`}>
               <button
                 onClick={() => setShowLikes(false)}
-                className="absolute top-2 right-2 text-white/70 hover:text-white"
+                className={`absolute top-2 right-2 ${currentTheme.text} opacity-70 hover:opacity-100 transition-opacity`}
               >
-                ✕
+                <X className="w-6 h-6" />
               </button>
 
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Liked Articles</h2>
+                <h2 className={`text-xl font-bold ${currentTheme.text}`}>Избранное</h2>
                 {likedArticles.length > 0 && (
                   <button
                     onClick={handleExport}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-                    title="Export liked articles"
+                    className={`flex items-center gap-2 px-3 py-1.5 text-sm ${currentTheme.background} hover:bg-white/10 rounded-lg transition-colors ${currentTheme.text}`}
+                    title="Экспорт избранного"
                   >
                     <Download className="w-4 h-4" />
-                    Export
+                    Экспорт
                   </button>
                 )}
               </div>
@@ -179,16 +255,16 @@ function AppContent() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search liked articles..."
-                  className="w-full bg-gray-800 text-white px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Поиск по избранному..."
+                  className={`w-full bg-white/10 ${currentTheme.text} px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
-                <Search className="w-5 h-5 text-white/50 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <Search className={`w-5 h-5 ${currentTheme.text} opacity-50 absolute left-3 top-1/2 transform -translate-y-1/2`} />
               </div>
 
               <div className="flex-1 overflow-y-auto min-h-0">
                 {filteredLikedArticles.length === 0 ? (
-                  <p className="text-white/70">
-                    {searchQuery ? "No matches found." : "No liked articles yet."}
+                  <p className={`${currentTheme.text} opacity-70`}>
+                    {searchQuery ? "Ничего не найдено" : "Нет избранных статей"}
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -207,19 +283,19 @@ function AppContent() {
                               href={article.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-bold hover:text-gray-200"
+                              className={`font-bold ${currentTheme.text} hover:opacity-80 transition-opacity`}
                             >
                               {article.title}
                             </a>
                             <button
                               onClick={() => toggleLike(article)}
-                              className="text-white/50 hover:text-white/90 p-1 rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                              aria-label="Remove from likes"
+                              className={`${currentTheme.text} opacity-50 hover:opacity-90 p-1 rounded-full md:opacity-0 md:group-hover:opacity-50 transition-opacity`}
+                              aria-label="Удалить из избранного"
                             >
                               <X className="w-4 h-4" />
                             </button>
                           </div>
-                          <p className="text-sm text-white/70 line-clamp-2">
+                          <p className={`text-sm ${currentTheme.text} opacity-70 line-clamp-2`}>
                             {article.extract}
                           </p>
                         </div>
@@ -233,13 +309,25 @@ function AppContent() {
         )}
 
         {articles.map((article, index) => (
-          <div key={`${article.pageid}-${index}`} className="article-card" data-index={index}>
-            <WikiCard article={article} />
-          </div>
+          <ArticleWithTags 
+            key={`${article.pageid}-${index}`}
+            article={article}
+            index={index}
+          />
         ))}
 
-        {articles.length > currentArticleIndex + 1 && (
-          <NextArticlePreview article={articles[currentArticleIndex + 1]} />
+        {/* Проверяем только следующую статью */}
+        {nextArticle && (
+          <ArticleVisibilityChecker
+            key={nextArticle.pageid}
+            article={nextArticle}
+            onVisible={handleVisibleArticle}
+            currentIndex={currentArticleIndex}
+          />
+        )}
+
+        {nextVisibleArticle && (
+          <NextArticlePreview article={nextVisibleArticle} />
         )}
 
         <div ref={observerTarget} className="h-10 -mt-1" />
@@ -250,6 +338,7 @@ function AppContent() {
           </div>
         )}
         <Analytics />
+        <TagFilter />
       </div>
     </div>
   )
@@ -258,7 +347,9 @@ function AppContent() {
 export default function App() {
   return (
     <SettingsProvider>
-      <AppContent />
+      <TagFilterProvider>
+        <AppContent />
+      </TagFilterProvider>
     </SettingsProvider>
   )
 }

@@ -1,5 +1,6 @@
 import { Volume2, VolumeX } from 'lucide-react';
 import { useSpeech } from '../hooks/useSpeech';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface SpeechButtonProps {
   text: string;
@@ -7,6 +8,7 @@ interface SpeechButtonProps {
 
 export function SpeechButton({ text }: SpeechButtonProps) {
   const { speak, stop, speaking, supported } = useSpeech();
+  const { currentTheme } = useSettings();
 
   if (!supported) return null;
 
@@ -17,9 +19,9 @@ export function SpeechButton({ text }: SpeechButtonProps) {
       title={speaking ? 'Остановить чтение' : 'Прослушать статью'}
     >
       {speaking ? (
-        <VolumeX className="w-6 h-6 text-white" />
+        <VolumeX className={`w-6 h-6 ${currentTheme.text}`} />
       ) : (
-        <Volume2 className="w-6 h-6 text-white" />
+        <Volume2 className={`w-6 h-6 ${currentTheme.text}`} />
       )}
     </button>
   );

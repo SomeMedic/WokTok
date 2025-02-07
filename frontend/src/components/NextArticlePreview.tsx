@@ -1,17 +1,31 @@
 import { WikiArticle } from './WikiCard';
 import { useSettings } from '../contexts/SettingsContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { useArticleTags, getTagStyle } from '../hooks/useArticleTags';
+import { useTagFilter } from '../contexts/TagFilterContext';
 
 interface NextArticlePreviewProps {
     article: WikiArticle;
 }
 
-export function NextArticlePreview({ article }: NextArticlePreviewProps) {
+export const NextArticlePreview = memo(function NextArticlePreview({ article }: NextArticlePreviewProps) {
     const { settings } = useSettings();
     const [isVisible, setIsVisible] = useState(true);
     const [currentArticle, setCurrentArticle] = useState(article);
     const [isExpanded, setIsExpanded] = useState(false);
+    const { currentTheme } = useSettings();
+    const tags = useArticleTags(article.title, article.extract);
+    const { selectedTags } = useTagFilter();
+
+    // Используем useMemo для вычисления shouldShow
+    const shouldShow = useMemo(() => {
+        if (!settings.showPreview) return false;
+        if (selectedTags.length > 0 && !tags.some(tag => selectedTags.includes(tag.id))) {
+            return false;
+        }
+        return true;
+    }, [settings.showPreview, selectedTags, tags]);
 
     useEffect(() => {
         if (article.pageid !== currentArticle.pageid) {
@@ -24,7 +38,7 @@ export function NextArticlePreview({ article }: NextArticlePreviewProps) {
         }
     }, [article, currentArticle]);
 
-    if (!settings.showPreview) return null;
+    if (!shouldShow) return null;
 
     // Для десктопа возвращаем обычное превью
     if (window.innerWidth >= 768) {
@@ -44,6 +58,13 @@ export function NextArticlePreview({ article }: NextArticlePreviewProps) {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-2 left-3 right-3">
+                            <div className="flex flex-wrap gap-1 mb-1">
+                                {tags.map(tag => (
+                                    <span key={tag.id} className={`${getTagStyle(tag)} text-xs px-1.5 py-0`}>
+                                        {tag.name}
+                                    </span>
+                                ))}
+                            </div>
                             <p className="text-sm text-white font-medium">Следующая статья:</p>
                             <h3 className="text-white font-bold truncate">{currentArticle.title}</h3>
                         </div>
@@ -56,19 +77,20 @@ export function NextArticlePreview({ article }: NextArticlePreviewProps) {
     // Для мобильных устройств возвращаем выдвигающееся превью
     return (
         <div className="block md:hidden">
-            <div className={`fixed top-1/2 -translate-y-1/2 right-0 z-30 transform transition-all duration-300 flex items-center
-                ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-2 rounded-l-lg shadow-lg flex-shrink-0"
-                >
-                    <ChevronLeft className={`w-6 h-6 text-gray-600 dark:text-gray-300 transition-transform duration-300
-                        ${isExpanded ? 'rotate-180' : ''}`} />
-                </button>
+            <div className={`fixed bottom-24 right-0 z-30 transform transition-all duration-300
+                ${isVisible ? 'opacity-100' : 'opacity-0'}
+                ${isExpanded ? 'translate-x-0' : 'translate-x-[calc(100%-2rem)]'}`}
+            >
+                <div className="flex items-center">
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-2 rounded-l-lg shadow-lg flex-shrink-0"
+                    >
+                        <ChevronLeft className={`w-6 h-6 ${currentTheme.text} transition-transform duration-300
+                            ${isExpanded ? 'rotate-180' : ''}`} />
+                    </button>
 
-                <div className={`w-72 transform transition-all duration-300 flex-shrink-0
-                    ${isExpanded ? 'translate-x-0' : 'translate-x-full'}`}>
-                    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-l-lg shadow-lg overflow-hidden ml-2">
+                    <div className="w-72 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-l-lg shadow-lg overflow-hidden ml-2">
                         <div className="relative h-32">
                             {currentArticle.thumbnail ? (
                                 <img
@@ -81,6 +103,13 @@ export function NextArticlePreview({ article }: NextArticlePreviewProps) {
                             )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                             <div className="absolute bottom-2 left-3 right-3">
+                                <div className="flex flex-wrap gap-1 mb-1">
+                                    {tags.map(tag => (
+                                        <span key={tag.id} className={`${getTagStyle(tag)} text-xs px-1.5 py-0`}>
+                                            {tag.name}
+                                        </span>
+                                    ))}
+                                </div>
                                 <p className="text-sm text-white font-medium">Следующая статья:</p>
                                 <h3 className="text-white font-bold truncate">{currentArticle.title}</h3>
                             </div>
@@ -90,4 +119,6 @@ export function NextArticlePreview({ article }: NextArticlePreviewProps) {
             </div>
         </div>
     );
-} 
+}, (prevProps, nextProps) => {
+    return prevProps.article.pageid === nextProps.article.pageid;
+});
