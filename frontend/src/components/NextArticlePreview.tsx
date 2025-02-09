@@ -1,7 +1,7 @@
 import { WikiArticle } from './WikiCard';
 import { useSettings } from '../contexts/SettingsContext';
 import { useEffect, useState, useMemo, memo } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronDown } from 'lucide-react';
 import { useArticleTags, getTagStyle } from '../hooks/useArticleTags';
 import { useTagFilter } from '../contexts/TagFilterContext';
 
@@ -13,10 +13,19 @@ export const NextArticlePreview = memo(function NextArticlePreview({ article }: 
     const { settings } = useSettings();
     const [isVisible, setIsVisible] = useState(true);
     const [currentArticle, setCurrentArticle] = useState(article);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(() => {
+        // Загружаем сохранённое состояние при инициализации
+        const saved = localStorage.getItem('previewExpanded');
+        return saved ? JSON.parse(saved) : false;
+    });
     const { currentTheme } = useSettings();
     const tags = useArticleTags(article.title, article.extract);
     const { selectedTags } = useTagFilter();
+
+    // Сохраняем состояние при изменении
+    useEffect(() => {
+        localStorage.setItem('previewExpanded', JSON.stringify(isExpanded));
+    }, [isExpanded]);
 
     // Используем useMemo для вычисления shouldShow
     const shouldShow = useMemo(() => {
@@ -40,33 +49,55 @@ export const NextArticlePreview = memo(function NextArticlePreview({ article }: 
 
     if (!shouldShow) return null;
 
-    // Для десктопа возвращаем обычное превью
+    // Для десктопа возвращаем выезжающий дизайн превью
     if (window.innerWidth >= 768) {
         return (
-            <div className={`fixed bottom-4 right-4 z-40 max-w-sm transform transition-all duration-300 hidden md:block
-                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden">
-                    <div className="relative h-24">
-                        {currentArticle.thumbnail ? (
-                            <img
-                                src={currentArticle.thumbnail.source}
-                                alt={currentArticle.title}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-2 left-3 right-3">
-                            <div className="flex flex-wrap gap-1 mb-1">
-                                {tags.map(tag => (
-                                    <span key={tag.id} className={`${getTagStyle(tag)} text-xs px-1.5 py-0`}>
-                                        {tag.name}
-                                    </span>
-                                ))}
+            <div className={`fixed bottom-0 left-1/2 -translate-x-1/2 z-40 w-[90%] md:max-w-[1200px] transform transition-all duration-300
+                ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="relative">
+                    {/* Кнопка раскрытия */}
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 p-1.5 rounded-full ${currentTheme.background} shadow-lg backdrop-blur-sm transition-transform duration-300 group
+                            ${isExpanded ? 'rotate-180' : ''}`}
+                    >
+                        <ChevronDown className={`w-5 h-5 ${currentTheme.text} opacity-70 group-hover:opacity-100 transition-opacity`} />
+                    </button>
+
+                    {/* Контент превью */}
+                    <div className={`${currentTheme.background} backdrop-blur-sm rounded-t-xl shadow-lg overflow-hidden transition-all duration-300 origin-bottom
+                        ${isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'}`}>
+                        <div className="flex items-center p-3 md:p-4 gap-4">
+                            {/* Превью изображения */}
+                            <div className="relative w-20 h-20 shrink-0">
+                                {currentArticle.thumbnail ? (
+                                    <img
+                                        src={currentArticle.thumbnail.source}
+                                        alt={currentArticle.title}
+                                        className="w-full h-full object-cover rounded-lg"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg" />
+                                )}
                             </div>
-                            <p className="text-sm text-white font-medium">Следующая статья:</p>
-                            <h3 className="text-white font-bold truncate">{currentArticle.title}</h3>
+
+                            {/* Контент */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3 mb-1.5">
+                                    <p className={`text-sm ${currentTheme.text} opacity-70`}>Следующая статья:</p>
+                                    <div className="h-px flex-1 bg-white/10" />
+                                </div>
+                                <h3 className={`text-lg font-bold ${currentTheme.text} truncate mb-1.5`}>
+                                    {currentArticle.title}
+                                </h3>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {tags.map(tag => (
+                                        <span key={tag.id} className={`${getTagStyle(tag)} text-xs px-1.5 py-0`}>
+                                            {tag.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

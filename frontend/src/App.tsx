@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState, useMemo, memo } from 'react'
 import { WikiArticle } from './components/WikiCard'
-import { Loader2, Search, X, Download, Menu, Heart, Settings as SettingsIcon } from 'lucide-react'
+import { Loader2, Search, X, Download, Menu, Heart, Settings as SettingsIcon, ChevronRight } from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
 import { LanguageSelector } from './components/LanguageSelector'
 import { useLikedArticles } from './contexts/LikedArticlesContext'
@@ -35,6 +35,116 @@ const ArticleVisibilityChecker = memo(function ArticleVisibilityChecker({
 
     return null;
 });
+
+// Добавим компонент десктопного меню
+interface DesktopMenuProps {
+  onShowLikes: () => void;
+  onShowSettings: () => void;
+}
+
+const DesktopMenu = ({ onShowLikes, onShowSettings }: DesktopMenuProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { currentTheme } = useSettings();
+
+  return (
+    <div className="hidden md:block fixed right-0 top-1/2 -translate-y-1/2 z-50">
+      {/* Кнопка открытия */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg 
+          ${currentTheme.background} hover:bg-white/10 backdrop-blur-sm shadow-lg 
+          transition-all duration-300 group z-10
+          ${isOpen ? 'opacity-0' : 'opacity-100'}`}
+        title="Открыть меню"
+      >
+        <Menu className={`w-5 h-5 ${currentTheme.text}`} />
+      </button>
+
+      {/* Выдвигающийся блок */}
+      <div className={`${currentTheme.background} backdrop-blur-md rounded-l-xl shadow-xl 
+        border border-white/10 w-[280px] p-3.5
+        fixed right-0 top-1/2 -translate-y-1/2
+        transform transition-all duration-500 ease-in-out
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+
+        {/* Затемнение фона */}
+        <div className={`fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-500
+          ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+          -z-10`} 
+          onClick={() => setIsOpen(false)}
+        />
+
+        {/* Заголовок */}
+        <div className={`flex items-center justify-between mb-6 
+          transform transition-all duration-300 delay-100
+          ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
+          <div className="flex items-center gap-2.5">
+            <div className={`w-7 h-7 rounded-lg ${currentTheme.background} flex items-center justify-center
+              shadow-inner border border-white/10`}>
+              <Menu className={`w-4 h-4 ${currentTheme.text}`} />
+            </div>
+            <div>
+              <h3 className={`font-medium ${currentTheme.text} text-base leading-none mb-1`}>
+                Меню
+              </h3>
+              <p className={`text-xs ${currentTheme.text} opacity-60 leading-none`}>
+                Дополнительные опции
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors`}
+            title="Закрыть"
+          >
+            <ChevronRight className={`w-5 h-5 ${currentTheme.text} rotate-180`} />
+          </button>
+        </div>
+
+        {/* Пункты меню */}
+        <div className="space-y-1.5">
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onShowLikes();
+            }}
+            className={`w-full px-4 py-2.5 rounded-lg text-left
+              transform transition-all duration-300 delay-150
+              ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}
+              ${currentTheme.background} hover:bg-white/10 ${currentTheme.text}
+              flex items-center gap-3`}
+          >
+            <Heart className="w-5 h-5" />
+            <span>Избранное</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onShowSettings();
+            }}
+            className={`w-full px-4 py-2.5 rounded-lg text-left
+              transform transition-all duration-300 delay-200
+              ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}
+              ${currentTheme.background} hover:bg-white/10 ${currentTheme.text}
+              flex items-center gap-3`}
+          >
+            <SettingsIcon className="w-5 h-5" />
+            <span>Настройки</span>
+          </button>
+
+          <div className={`px-4 py-2.5 transform transition-all duration-300 delay-250
+            ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
+            <p className={`text-sm mb-2 ${currentTheme.text} opacity-70`}>Язык:</p>
+            <div className="relative">
+              <LanguageSelector />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function AppContent() {
   const [showMenu, setShowMenu] = useState(false)
@@ -170,7 +280,7 @@ function AppContent() {
           </span>
         </button>
 
-        <div className="fixed top-4 right-4 z-50">
+        <div className="md:hidden fixed top-4 right-4 z-50">
           <button
             onClick={() => setShowMenu(!showMenu)}
             className={`p-2.5 rounded-full transition-all ${currentTheme.background} hover:bg-white/10 backdrop-blur-sm shadow-lg ${currentTheme.text}`}
@@ -181,44 +291,49 @@ function AppContent() {
               <Menu className="w-6 h-6" />
             )}
           </button>
-        </div>
 
-        {showMenu && (
-          <div className="fixed top-16 right-4 z-50">
-            <div className={`${currentTheme.background} backdrop-blur-md rounded-2xl shadow-lg overflow-hidden`}>
-              <div className="p-2 space-y-1 min-w-[200px]">
-                <button
-                  onClick={() => {
-                    setShowMenu(false)
-                    setShowLikes(true)
-                  }}
-                  className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors ${currentTheme.text}`}
-                >
-                  <Heart className="w-5 h-5" />
-                  <span>Избранное</span>
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowMenu(false)
-                    setShowSettings(true)
-                  }}
-                  className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors ${currentTheme.text}`}
-                >
-                  <SettingsIcon className="w-5 h-5" />
-                  <span>Настройки</span>
-                </button>
+          {showMenu && (
+            <div className="fixed top-16 right-4 z-50">
+              <div className={`${currentTheme.background} backdrop-blur-md rounded-2xl shadow-lg overflow-hidden`}>
+                <div className="p-2 space-y-1 min-w-[200px]">
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowLikes(true);
+                    }}
+                    className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors ${currentTheme.text}`}
+                  >
+                    <Heart className="w-5 h-5" />
+                    <span>Избранное</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowSettings(true);
+                    }}
+                    className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors ${currentTheme.text}`}
+                  >
+                    <SettingsIcon className="w-5 h-5" />
+                    <span>Настройки</span>
+                  </button>
 
-                <div className="px-4 py-2">
-                  <p className={`text-sm mb-2 ${currentTheme.text} opacity-70`}>Язык:</p>
-                  <div className="relative">
-                    <LanguageSelector />
+                  <div className="px-4 py-2">
+                    <p className={`text-sm mb-2 ${currentTheme.text} opacity-70`}>Язык:</p>
+                    <div className="relative">
+                      <LanguageSelector />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        <DesktopMenu 
+          onShowLikes={() => setShowLikes(true)}
+          onShowSettings={() => setShowSettings(true)}
+        />
 
         <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
 

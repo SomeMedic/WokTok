@@ -4,6 +4,7 @@ export interface Tag {
     id: string;
     name: string;
     color: string;
+    emoji: string;
 }
 
 interface Keyword {
@@ -15,77 +16,92 @@ export const TAGS: Record<string, Tag> = {
     science: {
         id: 'science',
         name: 'Наука',
-        color: 'bg-blue-500'
+        color: 'bg-blue-500',
+        emoji: '🔬'
     },
     history: {
         id: 'history',
         name: 'История',
-        color: 'bg-amber-500'
+        color: 'bg-amber-500',
+        emoji: '📜'
     },
     technology: {
         id: 'technology',
         name: 'Технологии',
-        color: 'bg-purple-500'
+        color: 'bg-purple-500',
+        emoji: '💻'
     },
     culture: {
         id: 'culture',
         name: 'Культура',
-        color: 'bg-pink-500'
+        color: 'bg-pink-500',
+        emoji: '🎭'
     },
     nature: {
         id: 'nature',
         name: 'Природа',
-        color: 'bg-emerald-500'
+        color: 'bg-emerald-500',
+        emoji: '🌿'
     },
     society: {
         id: 'society',
         name: 'Общество',
-        color: 'bg-orange-500'
+        color: 'bg-orange-500',
+        emoji: '👥'
     },
     art: {
         id: 'art',
         name: 'Искусство',
-        color: 'bg-rose-500'
+        color: 'bg-rose-500',
+        emoji: '🎨'
     },
     sport: {
         id: 'sport',
         name: 'Спорт',
-        color: 'bg-sky-500'
+        color: 'bg-sky-500',
+        emoji: '⚽'
     },
     politics: {
         id: 'politics',
         name: 'Политика',
-        color: 'bg-red-500'
+        color: 'bg-red-500',
+        emoji: '🏛️'
     },
     religion: {
         id: 'religion',
         name: 'Религия',
-        color: 'bg-indigo-500'
+        color: 'bg-indigo-500',
+        emoji: '🕊️'
     },
     philosophy: {
         id: 'philosophy',
         name: 'Философия',
-        color: 'bg-violet-500'
+        color: 'bg-violet-500',
+        emoji: '🤔'
     },
     geography: {
         id: 'geography',
         name: 'География',
-        color: 'bg-teal-500'
+        color: 'bg-teal-500',
+        emoji: '🌍'
     },
     medicine: {
         id: 'medicine',
         name: 'Медицина',
-        color: 'bg-green-500'
+        color: 'bg-green-500',
+        emoji: '⚕️'
     },
     space: {
         id: 'space',
         name: 'Космос',
-        color: 'bg-slate-500'
+        color: 'bg-slate-500',
+        emoji: '🚀'
     },
     military: {
         id: 'military',
         name: 'Военное дело',
-        color: 'bg-stone-500'
+        color: 'bg-stone-500',
+        emoji: '🎖️'
     }
 };
 

@@ -74,28 +74,112 @@ export function WikiCard({ article }: WikiCardProps) {
     };
 
     const cardClasses = `
-        max-w-4xl w-[90%] 
+        w-[90%] 
         ${currentTheme.background} 
-        backdrop-blur-lg rounded-xl 
-        shadow-xl overflow-hidden relative 
-        hover:shadow-2xl transition-all duration-500 
-        transform motion-safe:animate-card-appear
+        backdrop-blur-lg 
+        shadow-xl 
+        overflow-hidden 
+        relative 
+        hover:shadow-2xl 
+        transition-all 
+        duration-500 
+        transform 
+        motion-safe:animate-card-appear
         ${settings.focusMode ? 'focus-mode' : ''}
         flex flex-col
+        md:max-w-[1200px]
+        md:flex-row
+        md:h-[600px]
         max-h-[calc(100vh-4rem)]
     `;
 
-    const textClasses = `
+    const imageContainerClasses = `
+        relative 
+        h-96 
+        shrink-0
+        md:w-[45%]
+        md:h-full
+    `;
+
+    const contentClasses = `
+        p-8 
+        flex 
+        flex-col 
+        flex-1 
+        overflow-y-auto
+        md:p-12
+        md:border-l
+        md:border-white/10
+    `;
+
+    const titleClasses = `
+        text-4xl 
+        font-bold 
+        text-white 
+        drop-shadow-lg
+        md:text-5xl
+        md:leading-tight
+    `;
+
+    const tagsContainerClasses = `
+        flex 
+        flex-wrap 
+        gap-2 
+        mb-3
+        md:mb-6
+    `;
+
+    const extractClasses = `
         ${fonts[settings.fontFamily]}
         text-lg leading-relaxed
         ${currentTheme.text}
+        flex-1 
+        overflow-y-auto
+        md:text-xl
+        md:leading-relaxed
+    `;
+
+    const actionsContainerClasses = `
+        flex 
+        justify-between 
+        items-center 
+        mt-6 
+        shrink-0 
+        pb-safe
+        md:mt-8
+    `;
+
+    const readMoreClasses = `
+        text-blue-500 
+        hover:text-blue-600 
+        dark:text-blue-400 
+        dark:hover:text-blue-300 
+        transition-colors
+        md:text-lg
+    `;
+
+    const actionButtonClasses = `
+        p-2.5 
+        rounded-full 
+        bg-white/10 
+        hover:bg-white/20 
+        backdrop-blur-sm 
+        transition-all
+        md:p-3
+    `;
+
+    const actionIconClasses = `
+        w-6 
+        h-6 
+        md:w-7 
+        md:h-7
     `;
 
     return (
         <div className="h-screen w-full flex items-center justify-center snap-start snap-always relative">
             <div className={cardClasses}>
                 {article.thumbnail && (
-                    <div className="relative h-96 shrink-0">
+                    <div className={imageContainerClasses}>
                         <img
                             src={article.thumbnail.source}
                             alt={article.title}
@@ -104,46 +188,58 @@ export function WikiCard({ article }: WikiCardProps) {
                             } hover:scale-105`}
                             onLoad={() => setImageLoaded(true)}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-8">
-                            <div className="flex flex-wrap gap-2 mb-3">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-8 md:hidden">
+                            <div className={tagsContainerClasses}>
                                 {tags.map(tag => (
                                     <span key={tag.id} className={getTagStyle(tag)}>
                                         {tag.name}
                                     </span>
                                 ))}
                             </div>
-                            <h2 className="text-4xl font-bold text-white drop-shadow-lg">
+                            <h2 className={titleClasses}>
                                 {article.title}
                             </h2>
                         </div>
                     </div>
                 )}
-                <div className="p-8 flex flex-col flex-1 overflow-y-auto" onMouseUp={handleTextSelection}>
+                <div className={contentClasses}>
                     {!article.thumbnail && (
                         <>
-                            <div className="flex flex-wrap gap-2 mb-3">
+                            <div className={tagsContainerClasses}>
                                 {tags.map(tag => (
                                     <span key={tag.id} className={getTagStyle(tag)}>
                                         {tag.name}
                                     </span>
                                 ))}
                             </div>
-                            <h2 className="text-3xl font-bold mb-6 dark:text-white shrink-0">{article.title}</h2>
+                            <h2 className={`text-3xl font-bold mb-6 ${currentTheme.text} shrink-0`}>{article.title}</h2>
                         </>
                     )}
+                    {article.thumbnail && (
+                        <div className="hidden md:block mb-8">
+                            <div className={tagsContainerClasses}>
+                                {tags.map(tag => (
+                                    <span key={tag.id} className={getTagStyle(tag)}>
+                                        {tag.name}
+                                    </span>
+                                ))}
+                            </div>
+                            <h2 className={`text-4xl font-bold ${currentTheme.text}`}>{article.title}</h2>
+                        </div>
+                    )}
                     <p 
-                        className={`${textClasses} flex-1 overflow-y-auto`}
+                        className={extractClasses}
                         style={{ fontSize: `${settings.fontSize}px` }}
                     >
                         {article.extract}
                     </p>
-                    <div className="flex justify-between items-center mt-6 shrink-0 pb-safe">
+                    <div className={actionsContainerClasses}>
                         <a 
                             href={article.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                            className={readMoreClasses}
                         >
                             Читать полностью →
                         </a>
@@ -151,28 +247,28 @@ export function WikiCard({ article }: WikiCardProps) {
                             {selectedText && (
                                 <button
                                     onClick={saveQuote}
-                                    className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
+                                    className={actionButtonClasses}
                                     title="Сохранить цитату"
                                 >
-                                    <Quote className={`w-6 h-6 ${currentTheme.text}`} />
+                                    <Quote className={`${actionIconClasses} ${currentTheme.text}`} />
                                 </button>
                             )}
                             <SpeechButton text={`${article.title}. ${article.extract}`} />
                             <button
                                 onClick={handleShare}
-                                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
+                                className={actionButtonClasses}
                                 title="Поделиться"
                             >
-                                <Share2 className={`w-6 h-6 ${currentTheme.text}`} />
+                                <Share2 className={`${actionIconClasses} ${currentTheme.text}`} />
                             </button>
                             <button
                                 onClick={() => toggleLike(article)}
-                                className={`p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all ${
+                                className={`${actionButtonClasses} ${
                                     isLiked(article.pageid) ? 'text-red-500' : currentTheme.text
                                 }`}
                                 title={isLiked(article.pageid) ? 'Удалить из избранного' : 'Добавить в избранное'}
                             >
-                                <Heart className={`w-6 h-6 ${isLiked(article.pageid) ? 'fill-current' : ''}`} />
+                                <Heart className={`${actionIconClasses} ${isLiked(article.pageid) ? 'fill-current' : ''}`} />
                             </button>
                         </div>
                     </div>
