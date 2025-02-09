@@ -1,4 +1,4 @@
-import { Share2, Heart, Quote } from 'lucide-react';
+import { Share2, Heart, Quote, ArrowLeftRight } from 'lucide-react';
 import { useState } from 'react';
 import { useLikedArticles } from '../contexts/LikedArticlesContext';
 import { SpeechButton } from './SpeechButton';
@@ -24,6 +24,7 @@ interface WikiCardProps {
 export function WikiCard({ article }: WikiCardProps) {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [selectedText, setSelectedText] = useState('');
+    const [isReversed, setIsReversed] = useState(false);
     const { toggleLike, isLiked } = useLikedArticles();
     const { settings, currentTheme, fonts } = useSettings();
     const tags = useArticleTags(article.title, article.extract);
@@ -89,8 +90,10 @@ export function WikiCard({ article }: WikiCardProps) {
         flex flex-col
         md:max-w-[1200px]
         md:flex-row
+        ${isReversed ? 'md:flex-row-reverse' : ''}
         md:h-[600px]
         max-h-[calc(100vh-4rem)]
+        group
     `;
 
     const imageContainerClasses = `
@@ -179,31 +182,45 @@ export function WikiCard({ article }: WikiCardProps) {
         <div className="h-screen w-full flex items-center justify-center snap-start snap-always relative">
             <div className={cardClasses}>
                 {article.thumbnail && (
-                    <div className={imageContainerClasses}>
-                        <img
-                            src={article.thumbnail.source}
-                            alt={article.title}
-                            className={`w-full h-full object-cover transition-all duration-700 ${
-                                imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-                            } hover:scale-105`}
-                            onLoad={() => setImageLoaded(true)}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-8 md:hidden">
-                            <div className={tagsContainerClasses}>
-                                {tags.map(tag => (
-                                    <span key={tag.id} className={getTagStyle(tag)}>
-                                        {tag.name}
-                                    </span>
-                                ))}
+                    <>
+                        <div className={`${imageContainerClasses} ${isReversed ? 'animate-flip-sides-reverse' : 'animate-flip-sides'}`}>
+                            <img
+                                src={article.thumbnail.source}
+                                alt={article.title}
+                                className={`w-full h-full object-cover transition-all duration-700 ${
+                                    imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                                } hover:scale-105`}
+                                onLoad={() => setImageLoaded(true)}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                            <div className="absolute bottom-0 left-0 right-0 p-8 md:hidden">
+                                <div className={tagsContainerClasses}>
+                                    {tags.map(tag => (
+                                        <span key={tag.id} className={getTagStyle(tag)}>
+                                            {tag.name}
+                                        </span>
+                                    ))}
+                                </div>
+                                <h2 className={titleClasses}>
+                                    {article.title}
+                                </h2>
                             </div>
-                            <h2 className={titleClasses}>
-                                {article.title}
-                            </h2>
                         </div>
-                    </div>
+
+                        <div className="hidden md:flex absolute top-1/2 left-[44%] -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                                onClick={() => setIsReversed(!isReversed)}
+                                className={`${currentTheme.background} p-2 rounded-full shadow-lg backdrop-blur-sm
+                                    hover:bg-white/10 transition-all transform hover:scale-110
+                                    border border-white/10 ${isReversed ? 'left-[55%]' : ''}`}
+                                title={isReversed ? "Фото слева" : "Фото справа"}
+                            >
+                                <ArrowLeftRight className={`w-5 h-5 ${currentTheme.text} transition-transform duration-500 ${isReversed ? 'rotate-180' : ''}`} />
+                            </button>
+                        </div>
+                    </>
                 )}
-                <div className={contentClasses}>
+                <div className={`${contentClasses} ${isReversed ? 'md:border-r md:border-l-0 animate-flip-sides' : 'animate-flip-sides-reverse'}`}>
                     {!article.thumbnail && (
                         <>
                             <div className={tagsContainerClasses}>
