@@ -231,6 +231,7 @@ export function WikiCard({ article }: WikiCardProps) {
                     <p 
                         className={extractClasses}
                         style={{ fontSize: `${settings.fontSize}px` }}
+                        onMouseUp={handleTextSelection}
                     >
                         {article.extract}
                     </p>
