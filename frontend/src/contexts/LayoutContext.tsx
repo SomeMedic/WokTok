@@ -20,7 +20,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
     }, [isReversed]);
 
     const toggleReversed = () => {
-        setIsReversed(prev => !prev);
+        setIsReversed((prev: boolean) => !prev);
     };
 
     return (
