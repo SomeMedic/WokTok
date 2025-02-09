@@ -4,6 +4,7 @@ import { useLikedArticles } from '../contexts/LikedArticlesContext';
 import { SpeechButton } from './SpeechButton';
 import { useSettings } from '../contexts/SettingsContext';
 import { useArticleTags, getTagStyle } from '../hooks/useArticleTags';
+import { useLayout } from '../contexts/LayoutContext';
 
 export interface WikiArticle {
     title: string;
@@ -24,7 +25,7 @@ interface WikiCardProps {
 export function WikiCard({ article }: WikiCardProps) {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [selectedText, setSelectedText] = useState('');
-    const [isReversed, setIsReversed] = useState(false);
+    const { isReversed, toggleReversed } = useLayout();
     const { toggleLike, isLiked } = useLikedArticles();
     const { settings, currentTheme, fonts } = useSettings();
     const tags = useArticleTags(article.title, article.extract);
@@ -205,18 +206,19 @@ export function WikiCard({ article }: WikiCardProps) {
                                     {article.title}
                                 </h2>
                             </div>
-                        </div>
 
-                        <div className="hidden md:flex absolute top-1/2 left-[44%] -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                                onClick={() => setIsReversed(!isReversed)}
-                                className={`${currentTheme.background} p-2 rounded-full shadow-lg backdrop-blur-sm
-                                    hover:bg-white/10 transition-all transform hover:scale-110
-                                    border border-white/10 ${isReversed ? 'left-[55%]' : ''}`}
-                                title={isReversed ? "Фото слева" : "Фото справа"}
-                            >
-                                <ArrowLeftRight className={`w-5 h-5 ${currentTheme.text} transition-transform duration-500 ${isReversed ? 'rotate-180' : ''}`} />
-                            </button>
+                            <div className={`hidden md:flex absolute top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity
+                                ${isReversed ? 'left-0 -translate-x-1/2' : 'right-0 translate-x-1/2'}`}>
+                                <button
+                                    onClick={toggleReversed}
+                                    className={`${currentTheme.background} p-2 rounded-full shadow-lg backdrop-blur-sm
+                                        hover:bg-white/10 transition-all transform hover:scale-110
+                                        border border-white/10`}
+                                    title={isReversed ? "Фото слева" : "Фото справа"}
+                                >
+                                    <ArrowLeftRight className={`w-5 h-5 ${currentTheme.text} transition-transform duration-500 ${isReversed ? 'rotate-180' : ''}`} />
+                                </button>
+                            </div>
                         </div>
                     </>
                 )}

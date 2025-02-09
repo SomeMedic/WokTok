@@ -14,6 +14,7 @@ import { TagFilter } from './components/TagFilter'
 import { useArticleTags } from './hooks/useArticleTags'
 import { ArticleWithTags } from './components/ArticleWithTags'
 import { useVisibleArticlesCount } from './hooks/useVisibleArticlesCount'
+import { LayoutProvider } from './contexts/LayoutContext'
 
 // Создадим компонент для проверки видимости статьи
 const ArticleVisibilityChecker = memo(function ArticleVisibilityChecker({ 
@@ -448,9 +449,11 @@ function AppContent() {
 export default function App() {
   return (
     <SettingsProvider>
-      <TagFilterProvider>
-        <AppContent />
-      </TagFilterProvider>
+      <LayoutProvider>
+        <TagFilterProvider>
+          <AppContent />
+        </TagFilterProvider>
+      </LayoutProvider>
     </SettingsProvider>
   )
 }
