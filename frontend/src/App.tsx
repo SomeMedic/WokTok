@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState, useMemo, memo } from 'react'
 import { WikiArticle } from './components/WikiCard'
-import { Loader2, Search, X, Download, Menu, Heart, Settings as SettingsIcon, ChevronRight } from 'lucide-react'
+import { Loader2, Search, X, Download, Menu, Heart, Settings as SettingsIcon, ChevronRight, Trophy } from 'lucide-react'
 import { Analytics } from "@vercel/analytics/react"
 import { LanguageSelector } from './components/LanguageSelector'
 import { useLikedArticles } from './contexts/LikedArticlesContext'
@@ -15,6 +15,8 @@ import { useArticleTags } from './hooks/useArticleTags'
 import { ArticleWithTags } from './components/ArticleWithTags'
 import { useVisibleArticlesCount } from './hooks/useVisibleArticlesCount'
 import { LayoutProvider } from './contexts/LayoutContext'
+import { WikiQuest } from './components/WikiQuest'
+import { WikiQuestProvider } from './contexts/WikiQuestContext'
 
 // Создадим компонент для проверки видимости статьи
 const ArticleVisibilityChecker = memo(function ArticleVisibilityChecker({ 
@@ -41,9 +43,10 @@ const ArticleVisibilityChecker = memo(function ArticleVisibilityChecker({
 interface DesktopMenuProps {
   onShowLikes: () => void;
   onShowSettings: () => void;
+  onShowWikiQuest: () => void;
 }
 
-const DesktopMenu = ({ onShowLikes, onShowSettings }: DesktopMenuProps) => {
+const DesktopMenu = ({ onShowLikes, onShowSettings, onShowWikiQuest }: DesktopMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentTheme } = useSettings();
 
@@ -134,6 +137,21 @@ const DesktopMenu = ({ onShowLikes, onShowSettings }: DesktopMenuProps) => {
             <span>Настройки</span>
           </button>
 
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onShowWikiQuest();
+            }}
+            className={`w-full px-4 py-2.5 rounded-lg text-left
+              transform transition-all duration-300 delay-150
+              ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}
+              ${currentTheme.background} hover:bg-white/10 ${currentTheme.text}
+              flex items-center gap-3`}
+          >
+            <Trophy className="w-5 h-5" />
+            <span>WikiQuest</span>
+          </button>
+
           <div className={`px-4 py-2.5 transform transition-all duration-300 delay-250
             ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
             <p className={`text-sm mb-2 ${currentTheme.text} opacity-70`}>Язык:</p>
@@ -151,6 +169,7 @@ function AppContent() {
   const [showMenu, setShowMenu] = useState(false)
   const [showLikes, setShowLikes] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showWikiQuest, setShowWikiQuest] = useState(false)
   const { articles, loading, fetchArticles } = useWikiArticles()
   const { likedArticles, toggleLike } = useLikedArticles()
   const observerTarget = useRef(null)
@@ -334,9 +353,12 @@ function AppContent() {
         <DesktopMenu 
           onShowLikes={() => setShowLikes(true)}
           onShowSettings={() => setShowSettings(true)}
+          onShowWikiQuest={() => setShowWikiQuest(true)}
         />
 
         <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
+
+        <WikiQuest isOpen={showWikiQuest} onClose={() => setShowWikiQuest(false)} />
 
         {showLikes && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -450,9 +472,11 @@ export default function App() {
   return (
     <SettingsProvider>
       <LayoutProvider>
-        <TagFilterProvider>
-          <AppContent />
-        </TagFilterProvider>
+        <WikiQuestProvider>
+          <TagFilterProvider>
+            <AppContent />
+          </TagFilterProvider>
+        </WikiQuestProvider>
       </LayoutProvider>
     </SettingsProvider>
   )
